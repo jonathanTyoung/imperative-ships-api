@@ -83,3 +83,22 @@ def retrieve_ship(pk):
         serialized_ship = json.dumps(dictionary_version_of_object)
 
     return serialized_ship
+
+def create_ship(id, ship_data):
+    with sqlite3.connect("./shipping.db") as conn:
+        db_cursor = conn.cursor()
+
+        db_cursor.execute(
+            """
+            POST Ship
+                SET
+                    name = ?,
+                    hauler_id = ?
+            WHERE id = ?
+            """,
+            (ship_data['name'], ship_data['hauler_id'], id)
+        )
+
+        rows_affected = db_cursor.rowcount
+
+    return True if rows_affected > 0 else False
