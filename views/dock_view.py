@@ -92,16 +92,32 @@ def retrieve_dock(pk):
     return serialized_dock
 
 
-def create_dock(id, dock_data):
+def create_dock(dock_data):
     with sqlite3.connect("./shipping.db") as conn:
         db_cursor = conn.cursor()
 
+        # [2] Use INSERT INTO statement
         db_cursor.execute(
             """
-            INSERT INTO Dock (id, location, capacity)
-            VALUES (?, ?, ?)
+            INSERT INTO Dock
+                (location, capacity)
+            VALUES
+                (?, ?)
             """,
-            (id, dock_data["location"], dock_data["capacity"]),
+            (dock_data['location'], dock_data['capacity'])
         )
 
-    return True if db_cursor.rowcount > 0 else False
+        # Get the ID of the newly created dock
+        new_dock_id = db_cursor.lastrowid
+
+        # Retrieve the newly created dock from the database to return it
+        db_cursor.execute("""
+            SELECT
+                d.id,
+                d.location,
+                d.capacity
+            FROM Dock d
+            WHERE d.id = ?
+            """, (new_dock_id,))
+
+        new_dock = db_cursor.fetchone()
